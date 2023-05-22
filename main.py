@@ -3,7 +3,13 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from parser import PayeerParser, KucoinParser, BinanceParser, Analytics
 
-API_TOKEN: str = '5910465654:AAH0FWSi70xqgRvDUNqzALhv-pSR4s_Vol8'
+import os
+from dotenv import load_dotenv
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+
+API_TOKEN: str = os.getenv("API_TOKEN")
 
 # Создаем объекты бота и диспетчера
 bot: Bot = Bot(token=API_TOKEN)
