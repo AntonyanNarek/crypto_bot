@@ -7,7 +7,7 @@ from urllib.request import urlopen
 import requests
 
 
-PAIR_NAMES = ["BTC", "ETH", "LTC", "DASH", "XRP", "BCH"]
+COINS_NAMES = ["BTC", "ETH", "LTC", "DASH", "XRP", "BCH"]
 
 
 class PayeerParser():
@@ -41,7 +41,7 @@ class PayeerParser():
                                          headers=self.headers)
 
         response = json.loads(urlopen(request).read())
-        pair_name = PAIR_NAMES
+        pair_name = COINS_NAMES
         prices = {}
         for i in pair_name:
             prices[i] = response['pairs'][i + "_USD"]['ask']
@@ -75,7 +75,7 @@ class KucoinParser():
         return price_list2['data']['price']
 
     def get_all_prices(self):
-        pair_name = PAIR_NAMES
+        pair_name = COINS_NAMES
         prices = {}
         for i in pair_name:
             prices[i] = self.get_price(i, "USDT")
@@ -94,7 +94,7 @@ class BinanceParser():
         return result + "$"
 
     def get_all_prices(self):
-        pair_name = PAIR_NAMES
+        pair_name = COINS_NAMES
         prices = {}
         for i in pair_name:
             prices[i] = self.get_price(i + "USDT")
@@ -115,7 +115,14 @@ class Analytics():
     k = KucoinParser()
     b = BinanceParser()
 
-    def minMaxPrice(self, b: dict, p:dict, k:dict, coin:str):
+    def checkDiff(self, b: dict, p: dict, k: dict, coin: str):
+        a = max(float(b[coin]), float(p[coin]), float(k[coin])) / min(
+                float(b[coin]), float(p[coin]), float(k[coin]))
+        if a > 1.01:
+            return a
+        return 0
+
+    def minMaxPriceMessage(self, b: dict, p: dict, k: dict, coin: str):
         message = ""
         b = float(b[coin])
         p = float(p[coin])
@@ -138,13 +145,17 @@ class Analytics():
         return message
 
     def print_message(self):
+        message = "Не найдено выгодных сделок"
         binancePrices = self.b.get_all_prices()
         payeerPrices = self.p.get_all_prices()
         kucoinPrices = self.k.get_all_prices()
+        maxDiff = 0
 
-        for i in kucoinPrices.keys():
-            if max(float(binancePrices[i]), float(payeerPrices[i]), float(kucoinPrices[i]))/min(float(binancePrices[i]), float(payeerPrices[i]), float(kucoinPrices[i])) > 1.01:
-                return self.minMaxPrice(binancePrices, payeerPrices, kucoinPrices, i)
-        return 0
+        for coin in kucoinPrices.keys():
+            diff = self.checkDiff(b=binancePrices, p=payeerPrices, k=kucoinPrices, coin=coin)
+            if diff > 1.01 and diff > maxDiff:
+                maxDiff = diff
+                message = self.minMaxPriceMessage(b=binancePrices, p=payeerPrices, k=kucoinPrices, coin=coin)
+        return message
 
 
