@@ -10,21 +10,28 @@ import requests
 COINS_NAMES = ["BTC", "ETH", "LTC", "DASH", "XRP", "BCH"]
 
 
-class PayeerParser():
-    ts = int(round(time.time() * 1000))
-    method = 'ticker'
-    req = json.dumps({
-        'ts': ts,
-    })
-    H = hmac.new(b'PCgFNfQB6WfhMuE0', digestmod=hashlib.sha256)
-    H.update((method + req).encode('utf-8'))
-    sign = H.hexdigest()
+class Parser():
 
-    headers = {
-        'Content-Type': 'application/json',
-        'API-ID': '1daecebc-b1ee-4174-99f9-b6ca09840762',
-        'API-SIGN': sign
-    }
+    def request_prices_from_payeer(self):
+        ts = int(round(time.time() * 1000))
+        method = 'ticker'
+        req = json.dumps({
+            'ts': ts,
+        })
+        H = hmac.new(b'PCgFNfQB6WfhMuE0', digestmod=hashlib.sha256)
+        H.update((method + req).encode('utf-8'))
+        sign = H.hexdigest()
+
+        headers = {
+            'Content-Type': 'application/json',
+            'API-ID': '1daecebc-b1ee-4174-99f9-b6ca09840762',
+            'API-SIGN': sign
+        }
+        request = urllib.request.Request('https://payeer.com/api/trade/' + method,
+                                         data=bytes(req.encode('utf-8')),
+                                         headers=headers)
+        response = json.loads(urlopen(request).read())
+        return response
 
     def print_prices_from_payeer(self):
         prices = self.get_all_prices_from_payeer()
@@ -32,10 +39,7 @@ class PayeerParser():
         return result + "$"
 
     def get_all_prices_from_payeer(self):
-        request = urllib.request.Request('https://payeer.com/api/trade/' + self.method,
-                                         data=bytes(self.req.encode('utf-8')),
-                                         headers=self.headers)
-        response = json.loads(urlopen(request).read())
+        response = self.request_prices_from_payeer()
         pair_name = COINS_NAMES
         prices = {}
         for i in pair_name:
@@ -43,16 +47,9 @@ class PayeerParser():
         return prices
 
     def get_price_from_payeer(self, pair_name):
-        request = urllib.request.Request('https://payeer.com/api/trade/' + self.method,
-                                         data=bytes(self.req.encode('utf-8')),
-                                         headers=self.headers)
-
-        response = json.loads(urlopen(request).read())
+        response = self.request_prices_from_payeer()
         print(time.asctime())
         return f"\n{pair_name}: {response['pairs'][pair_name]['ask']}$"
-
-
-class KucoinParser():
 
     def print_prices_from_kucoin(self):
         prices = self.get_all_prices_from_kucoin()
@@ -70,9 +67,6 @@ class KucoinParser():
         for i in pair_name:
             prices[i] = self.get_price_from_kucoin(i, "USDT")
         return prices
-
-
-class BinanceParser():
 
     def print_prices_from_binance(self):
         prices = self.get_all_prices_from_binance()
@@ -94,10 +88,6 @@ class BinanceParser():
         r = requests.get(url, params=params).json()
         return float(r['bidPrice']) // 0.01 / 100
 
-
-class Analytics(PayeerParser, BinanceParser, KucoinParser):
-
-
     def checkDiff(self, b: dict, p: dict, k: dict, coin: str):
         a = max(float(b[coin]), float(p[coin]), float(k[coin])) / min(
                 float(b[coin]), float(p[coin]), float(k[coin]))
@@ -107,7 +97,7 @@ class Analytics(PayeerParser, BinanceParser, KucoinParser):
 
     def minMaxPriceMessage(self, b: dict, p: dict, k: dict, coin: str):
         message = ""
-        b = float(b[coin])
+        b: float = float(b[coin])
         p = float(p[coin])
         k = float(k[coin])
         if b == max(b, p, k):
