@@ -26,16 +26,15 @@ class PayeerParser():
         'API-SIGN': sign
     }
 
-    def print_prices(self):
-        prices = self.get_all_prices()
+    def print_prices_from_payeer(self):
+        prices = self.get_all_prices_from_payeer()
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
-    def get_all_prices(self):
+    def get_all_prices_from_payeer(self):
         request = urllib.request.Request('https://payeer.com/api/trade/' + self.method,
                                          data=bytes(self.req.encode('utf-8')),
                                          headers=self.headers)
-
         response = json.loads(urlopen(request).read())
         pair_name = COINS_NAMES
         prices = {}
@@ -43,7 +42,7 @@ class PayeerParser():
             prices[i] = response['pairs'][i + "_USD"]['ask']
         return prices
 
-    def get_price(self, pair_name):
+    def get_price_from_payeer(self, pair_name):
         request = urllib.request.Request('https://payeer.com/api/trade/' + self.method,
                                          data=bytes(self.req.encode('utf-8')),
                                          headers=self.headers)
@@ -55,40 +54,39 @@ class PayeerParser():
 
 class KucoinParser():
 
-    def print_prices(self):
-        prices = self.get_all_prices()
+    def print_prices_from_kucoin(self):
+        prices = self.get_all_prices_from_kucoin()
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
-    def get_price(self, to, from_l):
+    def get_price_from_kucoin(self, to, from_l):
         price_list2 = requests.get(
             "https://api.kucoin.com/api/v1/market/orderbook/level1?symbol={}-{}".format(to, from_l)).json()
-        # print(price_list2['data']['price'])
         return price_list2['data']['price']
 
-    def get_all_prices(self):
+    def get_all_prices_from_kucoin(self):
         pair_name = COINS_NAMES
         prices = {}
         for i in pair_name:
-            prices[i] = self.get_price(i, "USDT")
+            prices[i] = self.get_price_from_kucoin(i, "USDT")
         return prices
 
 
 class BinanceParser():
 
-    def print_prices(self):
-        prices = self.get_all_prices()
+    def print_prices_from_binance(self):
+        prices = self.get_all_prices_from_binance()
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
-    def get_all_prices(self):
+    def get_all_prices_from_binance(self):
         pair_name = COINS_NAMES
         prices = {}
         for i in pair_name:
-            prices[i] = self.get_price(i + "USDT")
+            prices[i] = self.get_price_from_binance(i + "USDT")
         return prices
 
-    def get_price(self, pair_name):
+    def get_price_from_binance(self, pair_name):
         url = "https://api.binance.com/api/v3/ticker/bookTicker"
         params = {
             'symbol': pair_name
@@ -97,11 +95,8 @@ class BinanceParser():
         return float(r['bidPrice']) // 0.01 / 100
 
 
-class Analytics():
+class Analytics(PayeerParser, BinanceParser, KucoinParser):
 
-    p = PayeerParser()
-    k = KucoinParser()
-    b = BinanceParser()
 
     def checkDiff(self, b: dict, p: dict, k: dict, coin: str):
         a = max(float(b[coin]), float(p[coin]), float(k[coin])) / min(
@@ -134,9 +129,9 @@ class Analytics():
 
     def print_message(self):
         message = "Не найдено выгодных сделок"
-        binancePrices = self.b.get_all_prices()
-        payeerPrices = self.p.get_all_prices()
-        kucoinPrices = self.k.get_all_prices()
+        binancePrices = self.get_all_prices_from_binance()
+        payeerPrices = self.get_all_prices_from_payeer()
+        kucoinPrices = self.get_all_prices_from_kucoin()
         maxDiff = 0
 
         for coin in kucoinPrices.keys():

@@ -18,12 +18,10 @@ bot: Bot = Bot(token=API_TOKEN)
 dp: Dispatcher = Dispatcher(bot)
 p = PayeerParser()
 a = Analytics()
-a1 = Analytics()
 k = KucoinParser()
 b = BinanceParser()
 
 
-# Этот хэндлер будет срабатывать на команду "/start"
 @dp.message_handler(commands=["start"])
 async def process_start_command(message: Message):
     await message.answer('Поиск арбитражных сделок запущен. Когда сделка будет найдена, мы пришлём вам сообщение')
@@ -40,31 +38,30 @@ async def process_help_command(message: Message):
 
 @dp.message_handler(commands=['kucoin_prices'])
 async def get_kucoin_prices(message: Message):
-    await message.answer(text=k.print_prices())
+    await message.answer(text=k.print_prices_from_kucoin())
 
 
 @dp.message_handler(commands=['payeer_prices'])
 async def get_payeer_prices(message: Message):
-    await message.answer(text=p.print_prices())
+    await message.answer(text=p.print_prices_from_payeer())
 
 
 @dp.message_handler(commands=['binance_prices'])
 async def get_binance_prices(message: Message):
-    await message.answer(text=b.print_prices())
+    await message.answer(text=b.print_prices_from_binance())
 
 
 @dp.message_handler(commands=['analytics'])
 async def analytics(message: Message):
-    await message.answer(text=a1.print_message())
+    await message.answer(text=a.print_message())
 
 
 @dp.message_handler()
 async def send_echo(message: Message):
     await message.reply(text=message.text)
 
-# Создаем асинхронную функцию
+
 async def set_main_menu(bot: Bot):
-    # Создаем список с командами и их описанием для кнопки menu
     main_menu_commands = [
         BotCommand(command='/help',
                    description='Справка по работе бота'),
@@ -86,7 +83,7 @@ async def search_arb(bot: Bot):
     while True:
         maxDiff = 0
         for coin in coins:
-            diff = a.checkDiff(b=b.get_all_prices(), p=p.get_all_prices(), k=k.get_all_prices(), coin=coin)
+            diff = a.checkDiff(b=b.get_all_prices_from_binance(), p=p.get_all_prices_from_payeer(), k=k.get_all_prices_from_kucoin(), coin=coin)
             if diff > 1.02 and diff > maxDiff:
                 maxDiff = diff
         if maxDiff > 1.025:
