@@ -28,11 +28,7 @@ class PayeerParser():
 
     def print_prices(self):
         prices = self.get_all_prices()
-        result = str(prices)
-        result = result.replace(',', '$\n')
-        result = result.replace('{', '')
-        result = result.replace('}', '')
-        result = result.replace("'", "")
+        result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
     def get_all_prices(self):
@@ -61,11 +57,7 @@ class KucoinParser():
 
     def print_prices(self):
         prices = self.get_all_prices()
-        result = str(prices)
-        result = result.replace(',', '$\n')
-        result = result.replace('{', '')
-        result = result.replace('}', '')
-        result = result.replace("'", "")
+        result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
     def get_price(self, to, from_l):
@@ -86,11 +78,7 @@ class BinanceParser():
 
     def print_prices(self):
         prices = self.get_all_prices()
-        result = str(prices)
-        result = result.replace(',', '$\n')
-        result = result.replace('{', '')
-        result = result.replace('}', '')
-        result = result.replace("'", "")
+        result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
     def get_all_prices(self):
