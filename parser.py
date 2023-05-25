@@ -12,7 +12,8 @@ COINS_NAMES = ["BTC", "ETH", "LTC", "DASH", "XRP", "BCH"]
 
 class Parser():
 
-    def request_prices_from_payeer(self):
+    @staticmethod
+    def request_prices_from_payeer():
         ts = int(round(time.time() * 1000))
         method = 'ticker'
         req = json.dumps({
@@ -56,7 +57,8 @@ class Parser():
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
         return result + "$"
 
-    def get_price_from_kucoin(self, to, from_l):
+    @staticmethod
+    def get_price_from_kucoin(to, from_l):
         price_list2 = requests.get(
             "https://api.kucoin.com/api/v1/market/orderbook/level1?symbol={}-{}".format(to, from_l)).json()
         return price_list2['data']['price']
@@ -80,22 +82,28 @@ class Parser():
             prices[i] = self.get_price_from_binance(i + "USDT")
         return prices
 
-    def get_price_from_binance(self, pair_name):
+    @staticmethod
+    def get_price_from_binance(pair_name):
         url = "https://api.binance.com/api/v3/ticker/bookTicker"
         params = {
             'symbol': pair_name
         }
         r = requests.get(url, params=params).json()
-        return float(r['bidPrice']) // 0.01 / 100
+        if pair_name!="XRPUSDT":
+            return float(r['bidPrice']) // 0.01 / 100
+        else:
+            return float(r['bidPrice']) // 0.0001 / 10000
 
-    def checkDiff(self, b: dict, p: dict, k: dict, coin: str):
+    @staticmethod
+    def checkDiff(b: dict, p: dict, k: dict, coin: str):
         a = max(float(b[coin]), float(p[coin]), float(k[coin])) / min(
                 float(b[coin]), float(p[coin]), float(k[coin]))
         if a > 1.01:
             return a
         return 0
 
-    def minMaxPriceMessage(self, b: dict, p: dict, k: dict, coin: str):
+    @staticmethod
+    def minMaxPriceMessage(b: dict, p: dict, k: dict, coin: str):
         message = ""
         b: float = float(b[coin])
         p = float(p[coin])
