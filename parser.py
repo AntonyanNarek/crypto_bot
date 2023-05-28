@@ -5,7 +5,12 @@ import json
 import urllib.request
 from urllib.request import urlopen
 import requests
+from dotenv import load_dotenv
+import os
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 COINS_NAMES = ["BTC", "ETH", "LTC", "DASH", "XRP", "BCH"]
 
@@ -22,10 +27,11 @@ class Parser():
         H = hmac.new(b'PCgFNfQB6WfhMuE0', digestmod=hashlib.sha256)
         H.update((method + req).encode('utf-8'))
         sign = H.hexdigest()
+        token = os.getenv("API_PAYEER_TOKEN")
 
         headers = {
             'Content-Type': 'application/json',
-            'API-ID': '1daecebc-b1ee-4174-99f9-b6ca09840762',
+            'API-ID': token,
             'API-SIGN': sign
         }
         request = urllib.request.Request('https://payeer.com/api/trade/' + method,
@@ -89,7 +95,7 @@ class Parser():
             'symbol': pair_name
         }
         r = requests.get(url, params=params).json()
-        if pair_name!="XRPUSDT":
+        if pair_name != "XRPUSDT":
             return float(r['bidPrice']) // 0.01 / 100
         else:
             return float(r['bidPrice']) // 0.0001 / 10000

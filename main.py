@@ -99,7 +99,8 @@ async def search_arb(bot: Bot):
     while True:
         maxDiff = 0
         for coin in coins:
-            diff = p.checkDiff(b=p.get_all_prices_from_binance(), p=p.get_all_prices_from_payeer(), k=p.get_all_prices_from_kucoin(), coin=coin)
+            diff = p.checkDiff(b=p.get_all_prices_from_binance(), p=p.get_all_prices_from_payeer(),
+                               k=p.get_all_prices_from_kucoin(), coin=coin)
             if diff > 1.02 and diff > maxDiff:
                 maxDiff = diff
         if maxDiff > 1.025:
@@ -111,5 +112,5 @@ async def search_arb(bot: Bot):
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, on_startup=set_main_menu(bot), skip_updates=True)
+    executor.start_polling(dp, skip_updates=True)
 
