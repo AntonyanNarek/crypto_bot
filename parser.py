@@ -37,7 +37,7 @@ class Parser():
     def print_prices_from_payeer(self):
         prices = self.get_all_prices_from_payeer()
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
-        return result + "$"
+        return "Payeer:\n " + result + "$"
 
     def get_all_prices_from_payeer(self):
         response = self.request_prices_from_payeer()
@@ -55,7 +55,7 @@ class Parser():
     def print_prices_from_kucoin(self):
         prices = self.get_all_prices_from_kucoin()
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
-        return result + "$"
+        return "Kucoin:\n " + result + "$"
 
     @staticmethod
     def get_price_from_kucoin(to, from_l):
@@ -73,7 +73,7 @@ class Parser():
     def print_prices_from_binance(self):
         prices = self.get_all_prices_from_binance()
         result = str(prices).replace(',', '$\n').replace('{', '').replace('}', '').replace("'", "")
-        return result + "$"
+        return "Binance:\n " + result + "$"
 
     def get_all_prices_from_binance(self):
         pair_name = COINS_NAMES
